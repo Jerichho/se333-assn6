@@ -1,6 +1,7 @@
 package playwrightTraditional;
 
 import com.microsoft.playwright.*;
+
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
 
@@ -11,17 +12,23 @@ public class BaseUITest {
     protected static Page page;
 
     @BeforeAll
-    public static void setup() {
+    static void setup() {
         playwright = Playwright.create();
-        browser = playwright.chromium().launch(new BrowserType.LaunchOptions().setHeadless(true));
+        browser = playwright.chromium().launch(
+                new BrowserType.LaunchOptions()
+                        .setHeadless(true)   // ✅ FORCE HEADLESS ALWAYS
+        );
+
         context = browser.newContext(new Browser.NewContextOptions()
                 .setRecordVideoDir(java.nio.file.Paths.get("videos/"))
-                .setRecordVideoSize(1280, 720));
+                .setRecordVideoSize(1280, 720)
+        );
+
         page = context.newPage();
     }
 
     @AfterAll
-    public static void teardown() {
+    static void teardown() {
         context.close();
         browser.close();
         playwright.close();
