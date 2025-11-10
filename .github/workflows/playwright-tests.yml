@@ -19,6 +19,11 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
+      - name: Set up Node (needed for browser dependencies)
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
       - name: Cache Maven Dependencies
         uses: actions/cache@v3
         with:
@@ -27,7 +32,7 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: Install Playwright Browsers
-        run: mvn exec:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install"
+        run: npx playwright install --with-deps
 
       - name: Run UI Tests
         run: mvn -q test
@@ -38,7 +43,6 @@ jobs:
         with:
           name: playwright-test-artifacts
           path: |
-            videos/
             **/videos/**
             **/screenshots/**
             **/test-results/**
