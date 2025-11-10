@@ -19,11 +19,6 @@ jobs:
           distribution: 'temurin'
           java-version: '17'
 
-      - name: Set up Node (needed for browser dependencies)
-        uses: actions/setup-node@v4
-        with:
-          node-version: '18'
-
       - name: Cache Maven Dependencies
         uses: actions/cache@v3
         with:
@@ -32,17 +27,18 @@ jobs:
           restore-keys: ${{ runner.os }}-m2
 
       - name: Install Playwright Browsers
-        run: npx playwright install --with-deps
+        run: mvn exec:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install"
 
-      - name: Run UI Tests
-        run: mvn -q test
+      - name: Run UI Tests (Headless with xvfb)
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x720x24" mvn -q test
 
-      - name: Upload Playwright Videos & Screenshots
+      - name: Upload Playwright Artifacts (Videos/Screenshots)
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: playwright-test-artifacts
           path: |
+            videos/
             **/videos/**
             **/screenshots/**
             **/test-results/**
