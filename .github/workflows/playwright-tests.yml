@@ -1,8 +1,7 @@
-name: Playwright UI Tests
+name: Run Playwright UI Tests
 
 on:
   push:
-    branches: [ "main" ]
   pull_request:
 
 jobs:
@@ -10,35 +9,16 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout Repository
-        uses: actions/checkout@v4
+    - uses: actions/checkout@v3
 
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '17'
+    - name: Set up Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: '17'
 
-      - name: Cache Maven Dependencies
-        uses: actions/cache@v3
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
+    - name: Install Playwright Browsers
+      run: mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install"
 
-      - name: Install Playwright Browsers
-        run: mvn exec:java -Dexec.mainClass=com.microsoft.playwright.CLI -Dexec.args="install"
-
-      - name: Run UI Tests (Headless with xvfb)
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x720x24" mvn -q test
-
-      - name: Upload Playwright Artifacts (Videos/Screenshots)
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: playwright-test-artifacts
-          path: |
-            videos/
-            **/videos/**
-            **/screenshots/**
-            **/test-results/**
+    - name: Run Tests
+      run: mvn test
