@@ -2,23 +2,34 @@ name: Run Playwright UI Tests
 
 on:
   push:
+    branches: [ main ]
   pull_request:
+    branches: [ main ]
 
 jobs:
   test:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Java
-      uses: actions/setup-java@v3
-      with:
-        distribution: 'temurin'
-        java-version: '17'
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          java-version: '17'
+          distribution: 'temurin'
 
-    - name: Install Playwright Browsers
-      run: mvn exec:java -e -D exec.mainClass=com.microsoft.playwright.CLI -D exec.args="install"
+      - name: Install Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
 
-    - name: Run Tests
-      run: mvn test
+      - name: Install Playwright CLI and browsers
+        run: |
+          npm install -g playwright
+          npx playwright install --with-deps
+
+      # 👇 This is the key fix
+      - name: Run Playwright UI Tests (headless)
+        run: xvfb-run mvn test
