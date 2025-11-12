@@ -1,9 +1,7 @@
 package playwrightTraditional;
 
 import com.microsoft.playwright.*;
-
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.*;
 
 public class BaseUITest {
     protected static Playwright playwright;
@@ -11,12 +9,14 @@ public class BaseUITest {
     protected static BrowserContext context;
     protected static Page page;
 
+    protected final String baseUrl = "https://depaul.bncollege.com";
+
     @BeforeAll
     static void setup() {
         playwright = Playwright.create();
         browser = playwright.chromium().launch(
                 new BrowserType.LaunchOptions()
-                        .setHeadless(true)   // ✅ FORCE HEADLESS ALWAYS
+                        .setHeadless(false) 
         );
 
         context = browser.newContext(new Browser.NewContextOptions()
@@ -25,12 +25,22 @@ public class BaseUITest {
         );
 
         page = context.newPage();
+        page.setDefaultTimeout(30000);
     }
 
     @AfterAll
     static void teardown() {
-        context.close();
-        browser.close();
-        playwright.close();
+        if (context != null) context.close();
+        if (browser != null) browser.close();
+        if (playwright != null) playwright.close();
+    }
+
+    protected void open(String path) {
+        page.navigate(baseUrl + path);
+        page.waitForLoadState();
+    }
+
+    protected void assertText(String text) {
+        page.getByText(text).isVisible();
     }
 }

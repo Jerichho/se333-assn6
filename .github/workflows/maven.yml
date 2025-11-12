@@ -1,0 +1,28 @@
+name: UI Tests
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+          cache: maven
+      - name: Install Playwright browsers
+        run: mvn -q -e -DskipTests=true test || true && npx --yes playwright install --with-deps
+      - name: Run tests
+        run: mvn -q test
+      - name: Upload videos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: videos
+          path: videos/
+          if-no-files-found: ignore
